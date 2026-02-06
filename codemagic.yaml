@@ -5,30 +5,19 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        provisioning_profiles: []  # 无签名，稍后重签
-        certificates: []
     scripts:
       - flutter packages pub get
       
-      # 真机构建（无签名）
+      # 构建真机调试版（无签名）
       - flutter build ios --debug --no-codesign
       
-      # 检查构建目录
-      - ls -la build/ios/
+      # 打包为 .ipa（修正缩进和路径）
+      - cd build/ios/iphoneos && mkdir -p Payload
+      - cd build/ios/iphoneos && cp -r Runner.app Payload/
+      - cd build/ios/iphoneos && zip -r app.ipa Payload
       
-      # 打包（如真机目录存在）
-      - |
-        if [ -d "build/ios/iphoneos" ]; then
-          cd build/ios/iphoneos
-          mkdir -p Payload
-          cp -r Runner.app Payload/
-          zip -r ../../app.ipa Payload
-          echo "Built for real device"
-        else
-          echo "Error: Real device build not found"
-          exit 1
-        fi
+      # 验证产物存在
+      - ls -lh build/ios/iphoneos/app.ipa
     artifacts:
-      - build/ios/app.ipa
+      - build/ios/iphoneos/app.ipa
       - build/ios/iphoneos/Runner.app
