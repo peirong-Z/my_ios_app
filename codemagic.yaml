@@ -1,0 +1,25 @@
+# 官方文档：https://docs.codemagic.io/yaml/yaml-getting-started/
+workflows:
+  ios-debug:
+    name: iOS Debug Build
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      # 安装 Flutter 依赖
+      - flutter packages pub get
+      
+      # 构建 iOS Debug 版本（真机可用）
+      # 官方参数文档：https://docs.flutter.dev/deployment/ios
+      - flutter build ios --debug --no-codesign
+      
+      # 打包为 .ipa（方便安装）
+      # 参考：https://docs.codemagic.io/flutter-publishing/building-a-flutter-app/
+      - cd build/ios/iphoneos
+      - mkdir -p Payload
+      - cp -r Runner.app Payload/
+      - zip -r app.ipa Payload
+    artifacts:
+      - build/ios/iphoneos/app.ipa
+      - build/ios/iphoneos/Runner.app
