@@ -6,18 +6,22 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - flutter packages pub get
+      - flutter pub get
       
       # 构建真机调试版（无签名）
       - flutter build ios --debug --no-codesign
       
-      # 打包为 .ipa（修正缩进和路径）
-      - cd build/ios/iphoneos && mkdir -p Payload
-      - cd build/ios/iphoneos && cp -r Runner.app Payload/
-      - cd build/ios/iphoneos && zip -r app.ipa Payload
+      # 打包为 .ipa（修正路径问题）
+      - |
+        cd build/ios/iphoneos
+        mkdir -p Payload
+        cp -r Runner.app Payload/
+        zip -r app.ipa Payload
+        # 返回根目录
+        cd ../../..
       
-      # 验证产物存在
+      # 验证产物
       - ls -lh build/ios/iphoneos/app.ipa
+      
     artifacts:
       - build/ios/iphoneos/app.ipa
-      - build/ios/iphoneos/Runner.app
