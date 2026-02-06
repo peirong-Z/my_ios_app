@@ -1,25 +1,34 @@
-# 官方文档：https://docs.codemagic.io/yaml/yaml-getting-started/
 workflows:
-  ios-debug:
-    name: iOS Debug Build
+  ios-real-device:
+    name: iOS Real Device Build
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
+      ios_signing:
+        provisioning_profiles: []  # 无签名，稍后重签
+        certificates: []
     scripts:
-      # 安装 Flutter 依赖
       - flutter packages pub get
       
-      # 构建 iOS Debug 版本（真机可用）
-      # 官方参数文档：https://docs.flutter.dev/deployment/ios
+      # 真机构建（无签名）
       - flutter build ios --debug --no-codesign
       
-      # 打包为 .ipa（方便安装）
-      # 参考：https://docs.codemagic.io/flutter-publishing/building-a-flutter-app/
-      - cd build/ios/iphoneos
-      - mkdir -p Payload
-      - cp -r Runner.app Payload/
-      - zip -r app.ipa Payload
+      # 检查构建目录
+      - ls -la build/ios/
+      
+      # 打包（如真机目录存在）
+      - |
+        if [ -d "build/ios/iphoneos" ]; then
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../app.ipa Payload
+          echo "Built for real device"
+        else
+          echo "Error: Real device build not found"
+          exit 1
+        fi
     artifacts:
-      - build/ios/iphoneos/app.ipa
+      - build/ios/app.ipa
       - build/ios/iphoneos/Runner.app
